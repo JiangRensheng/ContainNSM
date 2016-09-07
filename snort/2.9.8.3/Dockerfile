@@ -1,4 +1,4 @@
-# Snort 2.9.8.0
+# Snort 2.9.8.3
 #
 # VERSION               1
 FROM opennsm/debian
@@ -51,7 +51,7 @@ WORKDIR /home/$VIRTUSER
 RUN wget --no-check-certificate https://www.snort.org/downloads/snort/$PROG-$VERS.tar.gz
 RUN tar -zxf $PROG-$VERS.$EXT
 WORKDIR /home/$VIRTUSER/$PROG-$VERS
-RUN ./configure --prefix=$PREFIX --enable-sourcefire --enable-large-pcap --enable-profile --enable-gdb --enable-linux-smp-stats && make
+RUN ./configure --prefix=$PREFIX --enable-sourcefire --enable-large-pcap --enable-profile --enable-gdb --enable-linux-smp-stats --enable-gre --enable-mpls --enable-targetbased --enable-ppm --enable-perfprofiling --enable-zlib --enable-active-response --enable-normalizer --enable-reload --enable-react --enable-flexresp3 && make
 USER root
 RUN make install && ldconfig
 RUN chmod u+s $PREFIX/bin/snort
@@ -61,6 +61,19 @@ RUN rm -rf /home/$VIRTUSER/$PROG-$VERS
 RUN rm -rf /root/$DVERS
 RUN rm -rf /root/$LVERS
 RUN rm -rf /root/$LDVERS
+
+# Install AMP
+RUN apt-get install -yq mysql-server apache2 php5 perl php5-mysql libmysqlclient-dev
+
+# Install 
+WORKDIR /home/$VIRTUSER
+RUN git clone https://github.com/firnsy/barnyard2.git
+
+WORKDIR /home/$VIRTUSER/barnyard2
+RUN git checkout v2-1.13
+
+RUN ./configure --with-mysql --with-mysql-libraries=/usr/lib/x86_64-linux-gnu
+RUN make && sudo make install
 
 # Environment
 WORKDIR /home/$VIRTUSER
